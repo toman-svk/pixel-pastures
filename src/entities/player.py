@@ -1,0 +1,68 @@
+import pygame
+import os
+
+TILE_SIZE = 32
+
+class Player:
+    def __init__(self):
+        sheet_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "assets", "characters", "cowgirl_transparent.png"
+        )
+        self.sheet = pygame.image.load(sheet_path).convert_alpha()
+
+        self.animations = self.load_frames()
+        self.direction = 'down'  # default
+        self.frame_index = 0
+        self.image = self.animations[self.direction][self.frame_index]
+        self.rect = self.image.get_rect(topleft=(5 * TILE_SIZE, 5 * TILE_SIZE))
+
+        self.speed = 2
+        self.frame_timer = 0
+
+    def load_frames(self):
+        # Mapping of directions to sprite positions (row, col)
+        frame_map = {
+            'down': [(0, 0), (0, 1)],
+            'left': [(0, 2), (1, 2)],
+            'right': [(1, 0), (1, 1)],
+            'up': [(2, 0), (2, 1)]
+        }
+
+        frames = {}
+        for direction, positions in frame_map.items():
+            frames[direction] = []
+            for row, col in positions:
+                frame = self.sheet.subsurface(pygame.Rect(col * 64, row * 64, 64, 64))
+                frames[direction].append(pygame.transform.scale(frame, (TILE_SIZE, TILE_SIZE)))
+        return frames
+
+    def handle_input(self, keys):
+        dx, dy = 0, 0
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
+            dy = -self.speed
+            self.direction = 'up'
+        elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
+            dy = self.speed
+            self.direction = 'down'
+        elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            dx = -self.speed
+            self.direction = 'left'
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            dx = self.speed
+            self.direction = 'right'
+
+        self.rect.x += dx
+        self.rect.y += dy
+
+        # Animate only when moving
+        if dx != 0 or dy != 0:
+            self.frame_timer += 1
+            if self.frame_timer % 10 == 0:
+                self.frame_index = (self.frame_index + 1) % len(self.animations[self.direction])
+        else:
+            self.frame_index = 0  # idle
+
+    def draw(self, screen):
+        self.image = self.animations[self.direction][self.frame_index]
+        screen.blit(self.image, self.rect.topleft)
