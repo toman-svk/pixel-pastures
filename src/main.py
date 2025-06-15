@@ -8,6 +8,7 @@ from src.entities.player import Player
 from src.ui.hud import Hud
 from src.ui.button import Button
 from src.ui.font import get_font
+from src.music.background_music import music
 
 def run_game(selected_character):
     from src.ui.menu import main_menu
@@ -31,6 +32,8 @@ def run_game(selected_character):
         base_color="Black",
         hovering_color="Green"
     )
+    
+    music()
 
     running = True
     while running:
