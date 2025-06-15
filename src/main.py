@@ -24,15 +24,27 @@ def run_game(selected_character):
     hud = Hud()
     inputHandler = InputHandler(player, structures, popup, hud)
 
+    #Menu button
     BACK_BUTTON = Button(
         image=None,
-        pos=(950, 40),  # Pravý horní roh
+        pos=(950, 40),  
         text_input="MENU",
         font=get_font(40),
         base_color="Black",
         hovering_color="Green"
     )
+    #Music button
     
+    MUTE_BUTTON = Button(
+        image=None,
+        pos=(944, 690),  
+        text_input="MUTE",
+        font=get_font(30),
+        base_color="Black",
+        hovering_color="Green"
+    )
+    is_muted = False
+
     music()
 
     running = True
@@ -47,7 +59,17 @@ def run_game(selected_character):
                     running = False
                     main_menu()
                     return
-                
+                if MUTE_BUTTON.checkForInput(mouse_pos):
+                    is_muted = not is_muted
+                    if is_muted:
+                        pygame.mixer.music.set_volume(0)
+                        
+                        MUTE_BUTTON.set_text("MUTE")
+                    else:
+                        pygame.mixer.music.set_volume(0.3)
+                        
+                        MUTE_BUTTON.set_text("MUTE")
+
         screen.fill((0, 0, 0))
         draw_map(screen, tile_matrix, tiles)
         draw_structures(screen, structures)
@@ -63,9 +85,13 @@ def run_game(selected_character):
             if hasattr(s, 'growthStage'):
                 if s.growthStage < 5:
                     s.grow(screen)
-
+        
+        
         BACK_BUTTON.changeColor(mouse_pos)
         BACK_BUTTON.update(screen)
+
+        MUTE_BUTTON.changeColor(mouse_pos)
+        MUTE_BUTTON.update(screen)
 
         pygame.display.flip()
         clock.tick(60)
