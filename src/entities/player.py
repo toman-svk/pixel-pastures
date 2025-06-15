@@ -36,21 +36,22 @@ class Player:
                 frame = self.sheet.subsurface(pygame.Rect(col * 64, row * 64, 64, 64))
                 frames[direction].append(pygame.transform.scale(frame, (TILE_SIZE, TILE_SIZE)))
         return frames
-
-    def handle_input(self, keys):
+    
+    def move(self, directions):
         dx, dy = 0, 0
-        if keys[pygame.K_UP] or keys[pygame.K_w]:
-            dy = -self.speed
-            self.direction = 'up'
-        elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            dy = self.speed
-            self.direction = 'down'
-        elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            dx = -self.speed
-            self.direction = 'left'
-        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            dx = self.speed
-            self.direction = 'right'
+        for direction in directions:
+            if direction == 'up':
+                dy = -self.speed
+                self.direction = 'up'
+            if direction == 'down':
+                dy = self.speed
+                self.direction = 'down'
+            if direction == 'left':
+                dx = -self.speed
+                self.direction = 'left'
+            if direction == 'right':
+                dx = self.speed
+                self.direction = 'right'
 
         self.rect.x += dx
         self.rect.y += dy

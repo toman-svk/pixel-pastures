@@ -1,10 +1,15 @@
 # src/world/layering.py
 import os
 import pygame
+import random
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 STRUCTURE_DIR = os.path.join(BASE_DIR, "assets", "structures")
 TILE_SIZE = 32
+
+CROP_NAMES = ["corn", "sunflower", "wheat", "beet", "pumpkin", "kale", "lettuce", "flower", "tomato"]
+CROP_GROWTH_TIMES = [70, 100, 40, 60, 220, 110, 90, 20, 140]
+CROP_SCORES = [8, 10, 8, 9, 15, 11, 10, 5, 9]
 
 def load_crop_from_sheet(filename, tile_index, tile_size=(64, 64), columns=3):
     """
@@ -35,16 +40,27 @@ class Structure:
         pixel_y = self.position[1] * TILE_SIZE
         surface.blit(self.image, (pixel_x, pixel_y))
 
+    def get_rect(self):
+        return pygame.Rect(
+            self.position[0] * TILE_SIZE,
+            self.position[1] * TILE_SIZE,
+            self.size[0] * TILE_SIZE,
+            self.size[1] * TILE_SIZE
+        )
+
 class Crop:
-    def __init__(self, name, image, position, size=(1, 1)):
+    def __init__(self, name, image, position, size=(1, 1), score=10, stageTime=100):
         self.name = name
         self.image = image
         self.position = position  # (tile_x, tile_y)
         self.size = size          # usually (1,1)
-        self.harvested = False
+        self.growthStage = 5
+        self.growthTime = 0
+        self.stageTime = stageTime
+        self.score = score
 
     def draw(self, surface):
-        if not self.harvested:
+        if self.growthStage == 5:
             pixel_x = self.position[0] * TILE_SIZE
             pixel_y = self.position[1] * TILE_SIZE
             surface.blit(self.image, (pixel_x, pixel_y))
@@ -56,10 +72,24 @@ class Crop:
             self.size[0] * TILE_SIZE,
             self.size[1] * TILE_SIZE
         )
-
-    def on_click(self):
-        print(f"🌻 You clicked on a {self.name} at {self.position}")
-        self.harvested = True
+    
+    def harvest(self):
+        if self.growthStage == 5:
+            self.growthStage = 0
+            print("Crop harvested. Growth stage = " + str(self.growthStage))
+            return self.score
+        else:
+            return 0
+        
+    def grow(self, surface):
+        if self.growthStage == 5:
+            return
+        self.growthTime += 1
+        if self.growthTime >= self.stageTime:
+            self.growthTime = 0
+            self.growthStage += 1
+            self.draw(surface)
+            print('Crop ' + self.name +  ' has grown to stage ' + str(self.growthStage))
 
 
 def load_structure_image(filename, size_tiles):
@@ -86,14 +116,15 @@ def load_structures():
         for pos in fence_positions:
             structures.append(Structure("fence", fence_img, pos, (1, 1)))
 
-    sunflower_img = load_crop_from_sheet("farm_crops_transparent.png", tile_index=1)
-    if sunflower_img:
-        for y in range(3, 8):
-            for x in range(2, 8):
-                structures.append(Crop("sunflower", sunflower_img, (x, y), (1, 1)))
+    for y in range(3, 8):
+        for x in range(2, 8):
+            randomCrop = random.randint(0, 8)
+            random_crop_img = load_crop_from_sheet("farm_crops_transparent.png", tile_index=randomCrop)
+            if random_crop_img:
+                structures.append(Crop(CROP_NAMES[randomCrop], random_crop_img, (x, y), (1, 1), CROP_SCORES[randomCrop], CROP_GROWTH_TIMES[randomCrop]))
 
     tree_img = load_structure_image("tree.png", (3, 3))
-    tree_positions = [(15, 10), (5, 6), (12, 14), (20, 8), (25, 16)]  # Add more positions here
+    tree_positions = [(15, 17), (5, 16), (12, 14), (20, 8), (25, 16)]  # Add more positions here
     if tree_img:
         for pos in tree_positions:
             structures.append(Structure("tree", tree_img, pos, (3, 3)))
