@@ -4,10 +4,11 @@ import os
 TILE_SIZE = 32
 
 class Player:
-    def __init__(self):
+    def __init__(self, selected_character="cowgirl"):
+        character_file = "cowgirl_transparent.png" if selected_character == "cowgirl" else "cowboy_transparent.png"
         sheet_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            "assets", "characters", "cowgirl_transparent.png"
+            "assets", "characters", character_file
         )
         self.sheet = pygame.image.load(sheet_path).convert_alpha()
 
